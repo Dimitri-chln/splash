@@ -1,13 +1,10 @@
 use itertools::Itertools;
 
-use crate::parse::{Atom, BinaryOperator, Expression, Identifier, UnaryOperator};
+use crate::parse::{Atom, Expression, Identifier, Operator};
 
 use super::{
     block::{self, BlockValue},
-    builtin::{
-        and, divide, equal, greater_or_equal, greater_than, less_or_equal, less_than, minus,
-        modulo, not, not_equal, or, plus, times,
-    },
+    builtin,
     context::Context,
     function::Function,
     value::Value,
@@ -23,41 +20,33 @@ fn evaluate_atom<'a>(atom: &Atom<'a>, context: &mut Context<'a>) -> EvaluateResu
     }
 }
 
-fn evaluate_unary_operation<'a>(
-    operator: &UnaryOperator,
-    expression: &Expression<'a>,
+fn evaluate_operation<'a>(
+    operator: &Operator,
+    expressions: &[Expression<'a>],
     context: &mut Context<'a>,
 ) -> EvaluateResult<'a> {
-    let value = evaluate(expression, context)?.ok_or(SplashRuntimeError::NoValue)?;
+    let values = expressions
+        .iter()
+        .map(|expression| evaluate(expression, context))
+        .map_ok(|value| value.ok_or(SplashRuntimeError::NoValue))
+        .flatten_ok()
+        .collect::<Result<Vec<_>, _>>()?;
 
     match operator {
-        UnaryOperator::Not => not(value),
-    }
-}
-
-fn evaluate_binary_operation<'a>(
-    left: &Expression<'a>,
-    operator: &BinaryOperator,
-    right: &Expression<'a>,
-    context: &mut Context<'a>,
-) -> EvaluateResult<'a> {
-    let left = evaluate(left, context)?.ok_or(SplashRuntimeError::NoValue)?;
-    let right = evaluate(right, context)?.ok_or(SplashRuntimeError::NoValue)?;
-
-    match operator {
-        BinaryOperator::Plus => plus(left, right),
-        BinaryOperator::Minus => minus(left, right),
-        BinaryOperator::Times => times(left, right),
-        BinaryOperator::Divide => divide(left, right),
-        BinaryOperator::Modulo => modulo(left, right),
-        BinaryOperator::Equal => equal(left, right),
-        BinaryOperator::NotEqual => not_equal(left, right),
-        BinaryOperator::GreaterThan => greater_than(left, right),
-        BinaryOperator::GreaterOrEqual => greater_or_equal(left, right),
-        BinaryOperator::LessThan => less_than(left, right),
-        BinaryOperator::LessOrEqual => less_or_equal(left, right),
-        BinaryOperator::And => and(left, right),
-        BinaryOperator::Or => or(left, right),
+        Operator::Not => builtin::not(values[0].clone()),
+        Operator::Plus => builtin::plus(values[0].clone(), values[1].clone()),
+        Operator::Minus => builtin::minus(values[0].clone(), values[1].clone()),
+        Operator::Times => builtin::times(values[0].clone(), values[1].clone()),
+        Operator::Divide => builtin::divide(values[0].clone(), values[1].clone()),
+        Operator::Modulo => builtin::modulo(values[0].clone(), values[1].clone()),
+        Operator::Equal => builtin::equal(values[0].clone(), values[1].clone()),
+        Operator::NotEqual => builtin::not_equal(values[0].clone(), values[1].clone()),
+        Operator::GreaterThan => builtin::greater_than(values[0].clone(), values[1].clone()),
+        Operator::GreaterOrEqual => builtin::greater_or_equal(values[0].clone(), values[1].clone()),
+        Operator::LessThan => builtin::less_than(values[0].clone(), values[1].clone()),
+        Operator::LessOrEqual => builtin::less_or_equal(values[0].clone(), values[1].clone()),
+        Operator::And => builtin::and(values[0].clone(), values[1].clone()),
+        Operator::Or => builtin::or(values[0].clone(), values[1].clone()),
     }
 }
 
@@ -88,7 +77,7 @@ fn evaluate_function<'a>(
 
             context.child(|context| {
                 for (i, parameter) in parameters.into_iter().enumerate() {
-                    context.set_variable(arguments[i], parameter);
+                    context.initialize_variable(arguments[i], parameter);
                 }
 
                 match block::run(&body, context)? {
@@ -103,11 +92,8 @@ fn evaluate_function<'a>(
 pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> EvaluateResult<'a> {
     match expression {
         Expression::Atom(atom) => evaluate_atom(atom, context),
-        Expression::UnaryOperation(operator, expression) => {
-            evaluate_unary_operation(operator, expression, context)
-        }
-        Expression::BinaryOperation(left, operator, right) => {
-            evaluate_binary_operation(left, operator, right, context)
+        Expression::Operation(operator, expressions) => {
+            evaluate_operation(operator, expressions, context)
         }
         Expression::Function(identifier, parameters) => {
             evaluate_function(identifier, parameters, context)

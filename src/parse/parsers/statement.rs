@@ -20,12 +20,13 @@ use super::{
 pub enum Statement<'a> {
     Simple(Expression<'a>),
     Block(Block<'a>),
+    Initialization(Identifier<'a>, Expression<'a>),
     Assignment(Identifier<'a>, Expression<'a>),
     If(Expression<'a>, Block<'a>),
     IfElse(Expression<'a>, Block<'a>, Block<'a>),
     While(Expression<'a>, Block<'a>),
-    Return(Option<Expression<'a>>),
     Definition(Identifier<'a>, Vec<Identifier<'a>>, Block<'a>),
+    Return(Option<Expression<'a>>),
 }
 
 fn parse_simple(input: &str) -> IResult<&str, Statement, SplashParseError> {
@@ -34,6 +35,17 @@ fn parse_simple(input: &str) -> IResult<&str, Statement, SplashParseError> {
 
 fn parse_block(input: &str) -> IResult<&str, Statement, SplashParseError> {
     map(block, Statement::Block).parse(input)
+}
+
+fn parse_initialization(input: &str) -> IResult<&str, Statement, SplashParseError> {
+    map(
+        tuple((
+            delimited(keyword(Keyword::Let), trim(identifier), char('=')),
+            trim(expression),
+        )),
+        |(identifier, expression)| Statement::Initialization(identifier, expression),
+    )
+    .parse(input)
 }
 
 fn parse_assignment(input: &str) -> IResult<&str, Statement, SplashParseError> {
@@ -89,7 +101,7 @@ fn parse_return(input: &str) -> IResult<&str, Statement, SplashParseError> {
 fn parse_definition(input: &str) -> IResult<&str, Statement, SplashParseError> {
     map(
         tuple((
-            preceded(keyword(Keyword::Fn).and(char(' ')), trim(identifier)),
+            preceded(keyword(Keyword::Fn), trim(identifier)),
             delimited(
                 char('('),
                 separated_list0(char(','), trim(identifier)),
@@ -105,12 +117,13 @@ fn parse_definition(input: &str) -> IResult<&str, Statement, SplashParseError> {
 pub fn statement(input: &str) -> IResult<&str, Statement, SplashParseError> {
     terminated(
         alt((
-            parse_definition,
             parse_return,
+            parse_definition,
             parse_while,
             parse_if_else,
             parse_if,
             parse_assignment,
+            parse_initialization,
             parse_block,
             parse_simple,
         )),

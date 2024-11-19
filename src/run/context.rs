@@ -2,7 +2,7 @@ use std::collections::{hash_map::Entry, HashMap};
 
 use crate::parse::{Block, Identifier};
 
-use super::{builtin::print, function::Function, value::Value, SplashRuntimeError};
+use super::{builtin, function::Function, value::Value, SplashRuntimeError};
 
 pub struct Context<'a> {
     variables: Vec<HashMap<Identifier<'a>, Value>>,
@@ -40,35 +40,37 @@ impl<'a> Context<'a> {
         }
 
         match identifier {
-            "print" => Ok(&Function::BuiltIn(print)),
+            "print" => Ok(&Function::BuiltIn(builtin::print)),
+            "string" => Ok(&Function::BuiltIn(builtin::string)),
             _ => Err(SplashRuntimeError::NotDefined(identifier)),
         }
     }
 
-    pub fn set_variable(&mut self, identifier: Identifier<'a>, value: Value) {
-        for scope in self.variables.iter_mut().rev() {
-            if let Entry::Occupied(mut entry) = scope.entry(identifier) {
-                entry.insert(value);
-                return;
-            }
-        }
-
+    pub fn initialize_variable(&mut self, identifier: Identifier<'a>, value: Value) {
         self.variables.last_mut().unwrap().insert(identifier, value);
     }
 
-    pub fn set_function(
+    pub fn assign_variable(
+        &mut self,
+        identifier: Identifier<'a>,
+        value: Value,
+    ) -> Result<(), SplashRuntimeError<'a>> {
+        for scope in self.variables.iter_mut().rev() {
+            if let Entry::Occupied(mut entry) = scope.entry(identifier) {
+                entry.insert(value);
+                return Ok(());
+            }
+        }
+
+        return Err(SplashRuntimeError::NotDefined(identifier));
+    }
+
+    pub fn initialize_function(
         &mut self,
         identifier: Identifier<'a>,
         arguments: Vec<Identifier<'a>>,
         body: Block<'a>,
     ) {
-        for scope in self.functions.iter_mut().rev() {
-            if let Entry::Occupied(mut entry) = scope.entry(identifier) {
-                entry.insert(Function::Custom(arguments, body));
-                return;
-            }
-        }
-
         self.functions
             .last_mut()
             .unwrap()

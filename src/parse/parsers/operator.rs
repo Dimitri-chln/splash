@@ -4,12 +4,10 @@ use nom::{
 };
 
 #[derive(Clone, Debug)]
-pub enum UnaryOperator {
+pub enum Operator {
+    // Unary
     Not,
-}
-
-#[derive(Clone, Debug)]
-pub enum BinaryOperator {
+    // Binary
     Plus,
     Minus,
     Times,
@@ -25,29 +23,27 @@ pub enum BinaryOperator {
     Or,
 }
 
-pub fn unary_operator<'a, E: ParseError<&'a str>>(
-    input: &'a str,
-) -> IResult<&'a str, UnaryOperator, E> {
-    value(UnaryOperator::Not, char('!')).parse(input)
+pub fn unary_operator<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, Operator, E> {
+    value(Operator::Not, char('!')).parse(input)
 }
 
 pub fn binary_operator<'a, E: ParseError<&'a str>>(
     input: &'a str,
-) -> IResult<&'a str, BinaryOperator, E> {
+) -> IResult<&'a str, Operator, E> {
     alt((
-        value(BinaryOperator::Plus, char('+')),
-        value(BinaryOperator::Minus, char('-')),
-        value(BinaryOperator::Times, char('*')),
-        value(BinaryOperator::Divide, char('/')),
-        value(BinaryOperator::Modulo, char('%')),
-        value(BinaryOperator::Equal, tag("==")),
-        value(BinaryOperator::NotEqual, tag("!=")),
-        value(BinaryOperator::GreaterThan, char('>')),
-        value(BinaryOperator::GreaterOrEqual, tag(">=")),
-        value(BinaryOperator::LessThan, char('<')),
-        value(BinaryOperator::LessOrEqual, tag("<=")),
-        value(BinaryOperator::And, tag("&&")),
-        value(BinaryOperator::Or, tag("||")),
+        value(Operator::Plus, char('+')),
+        value(Operator::Minus, char('-')),
+        value(Operator::Times, char('*')),
+        value(Operator::Divide, char('/')),
+        value(Operator::Modulo, char('%')),
+        value(Operator::Equal, tag("==")),
+        value(Operator::NotEqual, tag("!=")),
+        value(Operator::GreaterThan, char('>')),
+        value(Operator::GreaterOrEqual, tag(">=")),
+        value(Operator::LessThan, char('<')),
+        value(Operator::LessOrEqual, tag("<=")),
+        value(Operator::And, tag("&&")),
+        value(Operator::Or, tag("||")),
     ))
     .parse(input)
 }

@@ -28,9 +28,13 @@ pub fn run<'a>(
                     BlockValue::None => {}
                 }
             }
+            Statement::Initialization(identifier, expression) => {
+                let value = evaluate(expression, context)?.ok_or(SplashRuntimeError::NoValue)?;
+                context.initialize_variable(*identifier, value);
+            }
             Statement::Assignment(identifier, expression) => {
                 let value = evaluate(expression, context)?.ok_or(SplashRuntimeError::NoValue)?;
-                context.set_variable(*identifier, value);
+                context.assign_variable(*identifier, value)?;
             }
             Statement::If(predicate, then) => {
                 if evaluate_predicate(predicate, context)? {
@@ -68,7 +72,7 @@ pub fn run<'a>(
                 };
             }
             Statement::Definition(identifier, arguments, body) => {
-                context.set_function(*identifier, arguments.clone(), body.clone());
+                context.initialize_function(*identifier, arguments.clone(), body.clone());
             }
         }
     }

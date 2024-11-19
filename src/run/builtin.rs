@@ -187,3 +187,19 @@ pub fn print(arguments: &[Value]) -> EvaluateResult<'static> {
 
     Ok(None)
 }
+
+pub fn string(arguments: &[Value]) -> EvaluateResult<'static> {
+    if arguments.len() != 1 {
+        return Err(SplashRuntimeError::InvalidSignature(
+            "str",
+            1,
+            arguments.len(),
+        ));
+    }
+
+    Ok(Some(match &arguments[0] {
+        Value::Number(number) => Value::String(number.to_string()),
+        Value::Boolean(boolean) => Value::String(boolean.to_string()),
+        Value::String(string) => Value::String(string.to_string()),
+    }))
+}

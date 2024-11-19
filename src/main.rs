@@ -14,7 +14,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 fn main() -> Result<()> {
     let args = Args::parse();
     let input = read_to_string(args.file)?;
-    let input = format!("{{ {input} }}");
+    let input = format!("{{{input}}}");
 
     let mut parser = SplashParser;
 

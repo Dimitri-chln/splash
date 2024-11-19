@@ -4,10 +4,12 @@ type Line = usize;
 type Column = usize;
 
 pub fn locate_error(input: &str, error: &SplashParseError) -> Option<(Line, Column)> {
+    eprintln!("{error:?}");
+
     match error {
         SplashParseError::Nom(remaining, _) => {
             let consumed = input
-                .strip_prefix("{ ")
+                .strip_prefix("{")
                 .unwrap()
                 .strip_suffix(remaining)
                 .unwrap();

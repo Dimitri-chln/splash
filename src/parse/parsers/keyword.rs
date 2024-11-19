@@ -3,6 +3,7 @@ use nom::{Compare, CompareResult, Err, IResult, InputTake, Parser};
 use crate::parse::SplashParseError;
 
 pub enum Keyword {
+    Let,
     If,
     Else,
     While,
@@ -13,6 +14,7 @@ pub enum Keyword {
 impl Keyword {
     pub fn as_str(&self) -> &str {
         match self {
+            Self::Let => "let",
             Self::If => "if",
             Self::Else => "else",
             Self::While => "while",
@@ -23,10 +25,10 @@ impl Keyword {
 }
 
 pub fn keyword<'a>(keyword: Keyword) -> impl Parser<&'a str, &'a str, SplashParseError<'a>> {
-    move |i: &'a str| {
-        let k = keyword.as_str();
-        let res: IResult<_, _, SplashParseError> = match i.compare(k) {
-            CompareResult::Ok => Ok(i.take_split(k.len())),
+    move |input: &'a str| {
+        let keyword = keyword.as_str();
+        let res: IResult<_, _, SplashParseError> = match input.compare(keyword) {
+            CompareResult::Ok => Ok(input.take_split(keyword.len())),
             _ => Err(Err::Error(SplashParseError::InvalidKeyword)),
         };
         res
