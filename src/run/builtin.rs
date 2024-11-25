@@ -186,7 +186,7 @@ pub fn print(arguments: &[Value]) -> EvaluateResult<'static> {
 pub fn string(arguments: &[Value]) -> EvaluateResult<'static> {
     if arguments.len() != 1 {
         return Err(SplashRuntimeError::InvalidSignature(
-            "str",
+            "string",
             1,
             arguments.len(),
         ));
@@ -198,7 +198,7 @@ pub fn string(arguments: &[Value]) -> EvaluateResult<'static> {
 pub fn length(arguments: &[Value]) -> EvaluateResult<'static> {
     if arguments.len() != 1 {
         return Err(SplashRuntimeError::InvalidSignature(
-            "str",
+            "length",
             1,
             arguments.len(),
         ));
