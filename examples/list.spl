@@ -1,0 +1,11 @@
+let a = [1, true, "hi", 8]
+
+let i = 0
+while (i < length(a)) {
+	print(a[i])
+	i = (i + 1)
+}
+
+for x in a {
+	print(x)
+}

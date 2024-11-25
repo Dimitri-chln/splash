@@ -13,6 +13,9 @@ pub enum SplashRuntimeError<'a> {
     InvalidSignatureType(Identifier<'a>, Vec<Value>),
     InvalidPredicate(Value),
     DivisionByZero,
+    NotAList(Value),
+    NotAnIndex(Value),
+    OutOufRange(Value),
 }
 
 impl Display for SplashRuntimeError<'_> {
@@ -24,10 +27,13 @@ impl Display for SplashRuntimeError<'_> {
                 Self::NotDefined(identifier) => format!("'{identifier}' is not defined."),
                 Self::NoValue => String::from("Expected a value, but the expression returned nothing."),
                 Self::InvalidType(identifier) => format!("'{identifier}' is of the wrong type."),
-				Self::InvalidSignature(identifier, expected, actual) => format!("Function '{identifier}' takes {expected} arguments, but {actual} were provided."),
-				Self::InvalidSignatureType(identifier, parameters) => format!("Incorrect arguments were given to the function '{identifier}'. Received ({parameters:?})."),
-				Self::InvalidPredicate(predicate) => format!("Predicate must be a boolean. Received '{predicate:?}'."),
-				Self::DivisionByZero => String::from("Cannot divide by zero.")
+                Self::InvalidSignature(identifier, expected, actual) => format!("Function '{identifier}' takes {expected} arguments, but {actual} were provided."),
+                Self::InvalidSignatureType(identifier, parameters) => format!("Incorrect arguments were given to the function '{identifier}'. Received ({parameters:?})."),
+                Self::InvalidPredicate(predicate) => format!("Predicate must be a boolean. Received '{predicate:?}'."),
+                Self::DivisionByZero => String::from("Cannot divide by zero."),
+                Self::NotAList(value) => format!("{value:?} is not a list."),
+                Self::NotAnIndex(value) => format!("{value:?} is not an index."),
+                Self::OutOufRange(value) => format!("Tried accessing an index that is out of range: {value:?}."),
             }
         )
     }

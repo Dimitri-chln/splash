@@ -179,12 +179,7 @@ pub fn print(arguments: &[Value]) -> EvaluateResult<'static> {
         ));
     }
 
-    match &arguments[0] {
-        Value::Number(number) => println!("{number}"),
-        Value::Boolean(boolean) => println!("{boolean}"),
-        Value::String(string) => println!("{string}"),
-    }
-
+    println!("{}", arguments[0].to_string());
     Ok(None)
 }
 
@@ -197,9 +192,22 @@ pub fn string(arguments: &[Value]) -> EvaluateResult<'static> {
         ));
     }
 
-    Ok(Some(match &arguments[0] {
-        Value::Number(number) => Value::String(number.to_string()),
-        Value::Boolean(boolean) => Value::String(boolean.to_string()),
-        Value::String(string) => Value::String(string.to_string()),
-    }))
+    Ok(Some(Value::String(arguments[0].to_string())))
+}
+
+pub fn length(arguments: &[Value]) -> EvaluateResult<'static> {
+    if arguments.len() != 1 {
+        return Err(SplashRuntimeError::InvalidSignature(
+            "str",
+            1,
+            arguments.len(),
+        ));
+    }
+
+    let list = match &arguments[0] {
+        Value::List(list) => list,
+        value => return Err(SplashRuntimeError::NotAList(value.clone())),
+    };
+
+    Ok(Some(Value::Number(list.len() as f64)))
 }

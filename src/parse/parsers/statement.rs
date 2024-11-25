@@ -25,6 +25,7 @@ pub enum Statement<'a> {
     If(Expression<'a>, Block<'a>),
     IfElse(Expression<'a>, Block<'a>, Block<'a>),
     While(Expression<'a>, Block<'a>),
+    For(Identifier<'a>, Expression<'a>, Block<'a>),
     Definition(Identifier<'a>, Vec<Identifier<'a>>, Block<'a>),
     Return(Option<Expression<'a>>),
 }
@@ -90,6 +91,18 @@ fn parse_while(input: &str) -> IResult<&str, Statement, SplashParseError> {
     .parse(input)
 }
 
+fn parse_for(input: &str) -> IResult<&str, Statement, SplashParseError> {
+    map(
+        tuple((
+            preceded(keyword(Keyword::For), trim(identifier)),
+            preceded(keyword(Keyword::In), trim(expression)),
+            trim(block),
+        )),
+        |(identifier, list, block)| Statement::For(identifier, list, block),
+    )
+    .parse(input)
+}
+
 fn parse_return(input: &str) -> IResult<&str, Statement, SplashParseError> {
     map(
         preceded(keyword(Keyword::Return), opt(trim(expression))),
@@ -119,6 +132,7 @@ pub fn statement(input: &str) -> IResult<&str, Statement, SplashParseError> {
         alt((
             parse_return,
             parse_definition,
+            parse_for,
             parse_while,
             parse_if_else,
             parse_if,

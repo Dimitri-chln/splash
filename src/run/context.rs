@@ -42,6 +42,7 @@ impl<'a> Context<'a> {
         match identifier {
             "print" => Ok(&Function::BuiltIn(builtin::print)),
             "string" => Ok(&Function::BuiltIn(builtin::string)),
+            "length" => Ok(&Function::BuiltIn(builtin::length)),
             _ => Err(SplashRuntimeError::NotDefined(identifier)),
         }
     }

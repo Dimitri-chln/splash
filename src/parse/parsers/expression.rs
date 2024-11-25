@@ -20,6 +20,8 @@ pub enum Expression<'a> {
     Atom(Atom<'a>),
     Operation(Operator, Vec<Expression<'a>>),
     Function(Identifier<'a>, Vec<Expression<'a>>),
+    List(Vec<Expression<'a>>),
+    Index(Identifier<'a>, Box<Expression<'a>>),
 }
 
 fn parse_atom(input: &str) -> IResult<&str, Expression, SplashParseError> {
@@ -59,6 +61,36 @@ fn parse_function(input: &str) -> IResult<&str, Expression, SplashParseError> {
     .parse(input)
 }
 
+fn parse_list(input: &str) -> IResult<&str, Expression, SplashParseError> {
+    map(
+        delimited(
+            char('['),
+            separated_list0(char(','), trim(expression)),
+            char(']'),
+        ),
+        Expression::List,
+    )
+    .parse(input)
+}
+
+fn parse_index(input: &str) -> IResult<&str, Expression, SplashParseError> {
+    map(
+        tuple((
+            trim(identifier),
+            delimited(char('['), trim(expression), char(']')),
+        )),
+        |(identifier, index)| Expression::Index(identifier, Box::new(index)),
+    )
+    .parse(input)
+}
+
 pub fn expression(input: &str) -> IResult<&str, Expression, SplashParseError> {
-    alt((parse_function, parse_operation, parse_atom)).parse(input)
+    alt((
+        parse_index,
+        parse_list,
+        parse_function,
+        parse_operation,
+        parse_atom,
+    ))
+    .parse(input)
 }

@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 use crate::parse::{Atom, Expression, Identifier, Operator};
 
 use super::{
@@ -7,6 +5,7 @@ use super::{
     builtin,
     context::Context,
     function::Function,
+    utils::evaluate_values,
     value::Value,
     SplashRuntimeError,
 };
@@ -25,12 +24,7 @@ fn evaluate_operation<'a>(
     expressions: &[Expression<'a>],
     context: &mut Context<'a>,
 ) -> EvaluateResult<'a> {
-    let values = expressions
-        .iter()
-        .map(|expression| evaluate(expression, context))
-        .map_ok(|value| value.ok_or(SplashRuntimeError::NoValue))
-        .flatten_ok()
-        .collect::<Result<Vec<_>, _>>()?;
+    let values = evaluate_values(expressions, context)?;
 
     match operator {
         Operator::Not => builtin::not(values[0].clone()),
@@ -56,13 +50,7 @@ fn evaluate_function<'a>(
     context: &mut Context<'a>,
 ) -> EvaluateResult<'a> {
     let function = context.function(identifier).cloned()?;
-
-    let parameters = parameters
-        .iter()
-        .map(|parameter| evaluate(parameter, context))
-        .map_ok(|value| value.ok_or(SplashRuntimeError::NoValue))
-        .flatten_ok()
-        .collect::<Result<Vec<_>, _>>()?;
+    let parameters = evaluate_values(parameters, context)?;
 
     match function {
         Function::BuiltIn(function) => function(&parameters),
@@ -89,6 +77,38 @@ fn evaluate_function<'a>(
     }
 }
 
+fn evaluate_list<'a>(
+    expressions: &[Expression<'a>],
+    context: &mut Context<'a>,
+) -> EvaluateResult<'a> {
+    Ok(Some(Value::List(evaluate_values(expressions, context)?)))
+}
+
+fn evaluate_index<'a>(
+    identifier: &Identifier<'a>,
+    index: &Expression<'a>,
+    context: &mut Context<'a>,
+) -> EvaluateResult<'a> {
+    let list = context.variable(identifier)?;
+    let index = evaluate(index, context)?.ok_or(SplashRuntimeError::NoValue)?;
+
+    let list = match list {
+        Value::List(list) => list,
+        value => return Err(SplashRuntimeError::NotAList(value)),
+    };
+
+    let index = match index {
+        Value::Number(number) => number as usize,
+        value => return Err(SplashRuntimeError::NotAnIndex(value)),
+    };
+
+    Ok(Some(
+        list.get(index)
+            .ok_or(SplashRuntimeError::OutOufRange(Value::Number(index as f64)))?
+            .clone(),
+    ))
+}
+
 pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> EvaluateResult<'a> {
     match expression {
         Expression::Atom(atom) => evaluate_atom(atom, context),
@@ -98,5 +118,7 @@ pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> E
         Expression::Function(identifier, parameters) => {
             evaluate_function(identifier, parameters, context)
         }
+        Expression::List(expressions) => evaluate_list(expressions, context),
+        Expression::Index(identifier, index) => evaluate_index(identifier, index, context),
     }
 }

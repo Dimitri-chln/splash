@@ -65,6 +65,23 @@ pub fn run<'a>(
                     }
                 }
             }
+            Statement::For(identifier, list, block) => {
+                let list = evaluate(list, context)?.ok_or(SplashRuntimeError::NoValue)?;
+                match list {
+                    Value::List(list) => {
+                        for element in list {
+                            match context.child(|context| {
+                                context.initialize_variable(identifier, element);
+                                self::run(block, context)
+                            })? {
+                                BlockValue::Return(value) => return Ok(BlockValue::Return(value)),
+                                BlockValue::None => {}
+                            }
+                        }
+                    }
+                    value => return Err(SplashRuntimeError::NotAList(value)),
+                }
+            }
             Statement::Return(expression) => {
                 return match expression {
                     Some(expression) => Ok(BlockValue::Return(evaluate(expression, context)?)),

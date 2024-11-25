@@ -7,6 +7,8 @@ pub enum Keyword {
     If,
     Else,
     While,
+    For,
+    In,
     Return,
     Fn,
 }
@@ -18,6 +20,8 @@ impl Keyword {
             Self::If => "if",
             Self::Else => "else",
             Self::While => "while",
+            Self::For => "for",
+            Self::In => "in",
             Self::Return => "return",
             Self::Fn => "fn",
         }
