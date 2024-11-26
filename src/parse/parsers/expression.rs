@@ -32,7 +32,7 @@ fn parse_operation(input: &str) -> IResult<&str, Expression, SplashParseError> {
     alt((
         map(
             tuple((unary_operator, trim(expression))),
-            |(operator, expression)| Expression::Operation(operator, vec![expression]),
+            |(operator, operand)| Expression::Operation(operator, vec![operand]),
         ),
         map(
             delimited(
@@ -76,7 +76,7 @@ fn parse_list(input: &str) -> IResult<&str, Expression, SplashParseError> {
 fn parse_index(input: &str) -> IResult<&str, Expression, SplashParseError> {
     map(
         tuple((
-            trim(identifier),
+            identifier,
             delimited(char('['), trim(expression), char(']')),
         )),
         |(identifier, index)| Expression::Index(identifier, Box::new(index)),

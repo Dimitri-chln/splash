@@ -21,10 +21,10 @@ fn evaluate_atom<'a>(atom: &Atom<'a>, context: &mut Context<'a>) -> EvaluateResu
 
 fn evaluate_operation<'a>(
     operator: &Operator,
-    expressions: &[Expression<'a>],
+    operands: &[Expression<'a>],
     context: &mut Context<'a>,
 ) -> EvaluateResult<'a> {
-    let values = evaluate_values(expressions, context)?;
+    let values = evaluate_values(operands, context)?;
 
     match operator {
         Operator::Not => builtin::not(values[0].clone()),
@@ -77,11 +77,8 @@ fn evaluate_function<'a>(
     }
 }
 
-fn evaluate_list<'a>(
-    expressions: &[Expression<'a>],
-    context: &mut Context<'a>,
-) -> EvaluateResult<'a> {
-    Ok(Some(Value::List(evaluate_values(expressions, context)?)))
+fn evaluate_list<'a>(elements: &[Expression<'a>], context: &mut Context<'a>) -> EvaluateResult<'a> {
+    Ok(Some(Value::List(evaluate_values(elements, context)?)))
 }
 
 fn evaluate_index<'a>(
@@ -112,13 +109,13 @@ fn evaluate_index<'a>(
 pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> EvaluateResult<'a> {
     match expression {
         Expression::Atom(atom) => evaluate_atom(atom, context),
-        Expression::Operation(operator, expressions) => {
-            evaluate_operation(operator, expressions, context)
+        Expression::Operation(operator, operands) => {
+            evaluate_operation(operator, operands, context)
         }
         Expression::Function(identifier, parameters) => {
             evaluate_function(identifier, parameters, context)
         }
-        Expression::List(expressions) => evaluate_list(expressions, context),
+        Expression::List(elements) => evaluate_list(elements, context),
         Expression::Index(identifier, index) => evaluate_index(identifier, index, context),
     }
 }

@@ -11,10 +11,7 @@ pub struct Context<'a> {
 
 impl<'a> Context<'a> {
     pub fn new() -> Self {
-        Self {
-            variables: vec![HashMap::new()],
-            functions: vec![HashMap::new()],
-        }
+        Self::default()
     }
 
     pub fn variable(&self, identifier: Identifier<'a>) -> Result<Value, SplashRuntimeError<'a>> {
@@ -39,12 +36,7 @@ impl<'a> Context<'a> {
             }
         }
 
-        match identifier {
-            "print" => Ok(&Function::BuiltIn(builtin::print)),
-            "string" => Ok(&Function::BuiltIn(builtin::string)),
-            "length" => Ok(&Function::BuiltIn(builtin::length)),
-            _ => Err(SplashRuntimeError::NotDefined(identifier)),
-        }
+        return Err(SplashRuntimeError::NotDefined(identifier));
     }
 
     pub fn initialize_variable(&mut self, identifier: Identifier<'a>, value: Value) {
@@ -91,5 +83,18 @@ impl<'a> Context<'a> {
         self.functions.pop();
 
         result
+    }
+}
+
+impl<'a> Default for Context<'a> {
+    fn default() -> Self {
+        Self {
+            variables: vec![HashMap::from([])],
+            functions: vec![HashMap::from([
+                ("print", Function::BuiltIn(builtin::print)),
+                ("string", Function::BuiltIn(builtin::string)),
+                ("length", Function::BuiltIn(builtin::length)),
+            ])],
+        }
     }
 }

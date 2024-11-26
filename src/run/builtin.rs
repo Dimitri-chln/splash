@@ -204,10 +204,11 @@ pub fn length(arguments: &[Value]) -> EvaluateResult<'static> {
         ));
     }
 
-    let list = match &arguments[0] {
-        Value::List(list) => list,
+    let len = match &arguments[0] {
+        Value::List(list) => list.len(),
+        Value::String(string) => string.len(),
         value => return Err(SplashRuntimeError::NotAList(value.clone())),
     };
 
-    Ok(Some(Value::Number(list.len() as f64)))
+    Ok(Some(Value::Number(len as f64)))
 }
