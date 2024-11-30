@@ -1,4 +1,6 @@
-use crate::parse::{Atom, Expression, Identifier, Operator};
+use itertools::Itertools;
+
+use crate::parse::{Atom, Expression, Identifier, Operand, Operation, Operator};
 
 use super::{
     block::{self, BlockValue},
@@ -20,13 +22,21 @@ fn evaluate_atom<'a>(atom: &Atom<'a>, context: &mut Context<'a>) -> EvaluateResu
 }
 
 fn evaluate_operation<'a>(
-    operator: &Operator,
-    operands: &[Expression<'a>],
+    operation: &Operation<'a>,
     context: &mut Context<'a>,
 ) -> EvaluateResult<'a> {
-    let values = evaluate_values(operands, context)?;
+    let values = operation
+        .operands()
+        .iter()
+        .map(|operand| match operand {
+            Operand::Operation(operation) => evaluate_operation(operation, context),
+            Operand::Expression(expression) => evaluate(expression, context),
+        })
+        .map_ok(|value| value.ok_or(SplashRuntimeError::NoValue))
+        .flatten_ok()
+        .collect::<Result<Vec<_>, _>>()?;
 
-    match operator {
+    match operation.operator() {
         Operator::Not => builtin::not(values[0].clone()),
         Operator::Plus => builtin::plus(values[0].clone(), values[1].clone()),
         Operator::Minus => builtin::minus(values[0].clone(), values[1].clone()),
@@ -109,9 +119,7 @@ fn evaluate_index<'a>(
 pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> EvaluateResult<'a> {
     match expression {
         Expression::Atom(atom) => evaluate_atom(atom, context),
-        Expression::Operation(operator, operands) => {
-            evaluate_operation(operator, operands, context)
-        }
+        Expression::Operation(operation) => evaluate_operation(operation, context),
         Expression::Function(identifier, parameters) => {
             evaluate_function(identifier, parameters, context)
         }

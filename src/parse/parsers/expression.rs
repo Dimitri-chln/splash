@@ -12,13 +12,13 @@ use crate::parse::{combinators::trim::trim, SplashParseError};
 use super::{
     atom::{atom, Atom},
     identifier::{identifier, Identifier},
-    operator::{binary_operator, unary_operator, Operator},
+    operation::{operation, Operation},
 };
 
 #[derive(Clone, Debug)]
 pub enum Expression<'a> {
     Atom(Atom<'a>),
-    Operation(Operator, Vec<Expression<'a>>),
+    Operation(Operation<'a>),
     Function(Identifier<'a>, Vec<Expression<'a>>),
     List(Vec<Expression<'a>>),
     Index(Identifier<'a>, Box<Expression<'a>>),
@@ -26,24 +26,6 @@ pub enum Expression<'a> {
 
 fn parse_atom(input: &str) -> IResult<&str, Expression, SplashParseError> {
     map(trim(atom), Expression::Atom).parse(input)
-}
-
-fn parse_operation(input: &str) -> IResult<&str, Expression, SplashParseError> {
-    alt((
-        map(
-            tuple((unary_operator, trim(expression))),
-            |(operator, operand)| Expression::Operation(operator, vec![operand]),
-        ),
-        map(
-            delimited(
-                char('('),
-                tuple((trim(expression), binary_operator, trim(expression))),
-                char(')'),
-            ),
-            |(left, operator, right)| Expression::Operation(operator, vec![left, right]),
-        ),
-    ))
-    .parse(input)
 }
 
 fn parse_function(input: &str) -> IResult<&str, Expression, SplashParseError> {
@@ -84,13 +66,14 @@ fn parse_index(input: &str) -> IResult<&str, Expression, SplashParseError> {
     .parse(input)
 }
 
+pub fn expression_no_operation(input: &str) -> IResult<&str, Expression, SplashParseError> {
+    alt((parse_index, parse_list, parse_function, parse_atom)).parse(input)
+}
+
 pub fn expression(input: &str) -> IResult<&str, Expression, SplashParseError> {
     alt((
-        parse_index,
-        parse_list,
-        parse_function,
-        parse_operation,
-        parse_atom,
+        map(operation, Expression::Operation),
+        expression_no_operation,
     ))
     .parse(input)
 }

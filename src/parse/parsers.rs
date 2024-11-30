@@ -5,6 +5,7 @@ pub mod expression;
 pub mod identifier;
 pub mod keyword;
 pub mod literal;
+pub mod operation;
 pub mod operator;
 pub mod program;
 pub mod statement;
