@@ -1,5 +1,9 @@
 use nom::{
-    branch::alt, bytes::complete::tag, combinator::map, number::complete::double, IResult, Parser,
+    branch::alt,
+    bytes::complete::tag,
+    combinator::{map, value},
+    number::complete::double,
+    IResult, Parser,
 };
 
 use crate::parse::SplashParseError;
@@ -19,8 +23,8 @@ fn parse_number(input: &str) -> IResult<&str, Literal, SplashParseError> {
 
 fn parse_boolean(input: &str) -> IResult<&str, Literal, SplashParseError> {
     alt((
-        map(tag("true"), |_| Literal::Boolean(true)),
-        map(tag("false"), |_| Literal::Boolean(false)),
+        value(Literal::Boolean(true), tag("true")),
+        value(Literal::Boolean(false), tag("false")),
     ))
     .parse(input)
 }
