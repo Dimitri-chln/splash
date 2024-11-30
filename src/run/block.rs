@@ -65,14 +65,14 @@ pub fn run<'a>(
                     }
                 }
             }
-            Statement::For(identifier, list, block) => {
+            Statement::For(identifier, list, body) => {
                 let list = evaluate(list, context)?.ok_or(SplashRuntimeError::NoValue)?;
                 match list {
                     Value::List(list) => {
                         for element in list {
                             match context.child(|context| {
                                 context.initialize_variable(identifier, element);
-                                self::run(block, context)
+                                self::run(body, context)
                             })? {
                                 BlockValue::Return(value) => return Ok(BlockValue::Return(value)),
                                 BlockValue::None => {}
