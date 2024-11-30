@@ -1,11 +1,11 @@
-let a = [1, true, "hi", 8]
+let list = [1, true, "hi", 8]
 
 let i = 0
-while i < length(a) {
-	print(a[i])
+while i < length(list) {
+	print(list[i])
 	i = i + 1
 }
 
-for x in a {
-	print(x)
+for element in list {
+	print(element)
 }
