@@ -212,3 +212,62 @@ pub fn length(arguments: &[Value]) -> Result<'static> {
 
     Ok(Some(Value::Number(len as f64)))
 }
+
+pub fn push(arguments: &[Value]) -> Result<'static> {
+    if arguments.len() != 2 {
+        return Err(SplashRuntimeError::InvalidSignature(
+            "push",
+            2,
+            arguments.len(),
+        ));
+    }
+
+    let mut list = match &arguments[0] {
+        Value::List(list) => list.clone(),
+        value => return Err(SplashRuntimeError::NotAList(value.clone())),
+    };
+
+    list.push(arguments[1].clone());
+    Ok(Some(Value::List(list)))
+}
+
+pub fn pop(arguments: &[Value]) -> Result<'static> {
+    if arguments.len() != 1 {
+        return Err(SplashRuntimeError::InvalidSignature(
+            "pop",
+            1,
+            arguments.len(),
+        ));
+    }
+
+    let mut list = match &arguments[0] {
+        Value::List(list) => list.clone(),
+        value => return Err(SplashRuntimeError::NotAList(value.clone())),
+    };
+
+    list.pop();
+    Ok(Some(Value::List(list)))
+}
+
+pub fn range(arguments: &[Value]) -> Result<'static> {
+    if arguments.len() != 1 {
+        return Err(SplashRuntimeError::InvalidSignature(
+            "range",
+            1,
+            arguments.len(),
+        ));
+    }
+
+    let size = match &arguments[0] {
+        Value::Number(number) => *number as usize,
+        _ => {
+            return Err(SplashRuntimeError::InvalidSignatureType(
+                "range",
+                arguments.to_vec(),
+            ))
+        }
+    };
+
+    let range = (0..size).map(|i| Value::Number(i as f64)).collect();
+    Ok(Some(Value::List(range)))
+}

@@ -9,3 +9,14 @@ while i < length(list) {
 for element in list {
 	print(element)
 }
+
+let list = []
+for i in range(10) {
+	list = push(list, i)
+}
+print(list)
+
+for _ in range(5) {
+	list = pop(list)
+}
+print(list)

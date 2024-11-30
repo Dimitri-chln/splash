@@ -94,6 +94,9 @@ impl<'a> Default for Context<'a> {
                 ("print", Function::BuiltIn(builtin::print)),
                 ("string", Function::BuiltIn(builtin::string)),
                 ("length", Function::BuiltIn(builtin::length)),
+                ("push", Function::BuiltIn(builtin::push)),
+                ("pop", Function::BuiltIn(builtin::pop)),
+                ("range", Function::BuiltIn(builtin::range)),
             ])],
         }
     }

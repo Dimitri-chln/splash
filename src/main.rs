@@ -21,13 +21,15 @@ fn main() -> Result<()> {
     match parser.parse(&input) {
         Ok((_, program)) => {
             if let Err(error) = Runtime::new(program).start() {
-                eprintln!("Error: {error}");
+                eprintln!("Runtime error: {error}");
             }
         }
         Err(error) => match error {
             nom::Err::Error(error) | nom::Err::Failure(error) => {
                 match locate_error(&input, &error) {
-                    Some((line, column)) => eprintln!("Error at line {line}, column {column}."),
+                    Some((line, column)) => {
+                        eprintln!("Parse error at line {line}, column {column}.")
+                    }
                     None => eprintln!("Unexpected error: {error:?}"),
                 }
             }
