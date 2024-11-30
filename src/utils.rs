@@ -3,11 +3,14 @@ use crate::parse::SplashParseError;
 type Line = usize;
 type Column = usize;
 
+/// # Panics
+/// This function will panic if the input in not properly enclosed in curly brackets.
+#[must_use]
 pub fn locate_error(input: &str, error: &SplashParseError) -> Option<(Line, Column)> {
     match error {
         SplashParseError::Nom(remaining, _) => {
             let consumed = input
-                .strip_prefix("{")
+                .strip_prefix('{')
                 .unwrap()
                 .strip_suffix(remaining)
                 .unwrap();

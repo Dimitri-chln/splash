@@ -18,6 +18,7 @@ pub fn block(input: &str) -> IResult<&str, Block, SplashParseError> {
 }
 
 impl<'a> Block<'a> {
+    #[must_use]
     pub fn statements(&self) -> &[Statement<'a>] {
         &self.0
     }

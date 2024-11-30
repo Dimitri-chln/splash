@@ -1,17 +1,17 @@
-use super::{evaluate::EvaluateResult, value::Value, SplashRuntimeError};
+use super::{evaluate::Result, value::Value, SplashRuntimeError};
 
 /*************
  * OPERATORS *
  *************/
 
-pub fn not(value: Value) -> EvaluateResult<'static> {
+pub fn not(value: Value) -> Result<'static> {
     match value {
         Value::Boolean(boolean) => Ok(Some(Value::Boolean(!boolean))),
         value => Err(SplashRuntimeError::InvalidSignatureType("not", vec![value])),
     }
 }
 
-pub fn plus(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn plus(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Number(left + right))),
         (Value::String(left), Value::String(right)) => {
@@ -26,7 +26,7 @@ pub fn plus(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn minus(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn minus(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Number(left - right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -36,7 +36,7 @@ pub fn minus(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn times(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn times(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Number(left * right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -46,7 +46,7 @@ pub fn times(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn divide(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn divide(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => {
             if right == 0.0 {
@@ -62,7 +62,7 @@ pub fn divide(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn modulo(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn modulo(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => {
             if right == 0.0 {
@@ -78,7 +78,7 @@ pub fn modulo(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn equal(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn equal(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => {
             Ok(Some(Value::Boolean((left - right).abs() <= f64::EPSILON)))
@@ -92,7 +92,7 @@ pub fn equal(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn not_equal(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn not_equal(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => {
             Ok(Some(Value::Boolean((left - right).abs() > f64::EPSILON)))
@@ -106,7 +106,7 @@ pub fn not_equal(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn greater_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn greater_or_equal(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left >= right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -116,7 +116,7 @@ pub fn greater_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn greater_than(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn greater_than(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left > right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -126,7 +126,7 @@ pub fn greater_than(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn less_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn less_or_equal(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left <= right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -136,7 +136,7 @@ pub fn less_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn less_than(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn less_than(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left < right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -146,7 +146,7 @@ pub fn less_than(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn and(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn and(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Boolean(left), Value::Boolean(right)) => Ok(Some(Value::Boolean(left && right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -156,7 +156,7 @@ pub fn and(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn or(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn or(left: Value, right: Value) -> Result<'static> {
     match (left, right) {
         (Value::Boolean(left), Value::Boolean(right)) => Ok(Some(Value::Boolean(left || right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
@@ -170,7 +170,7 @@ pub fn or(left: Value, right: Value) -> EvaluateResult<'static> {
  * FUNCTIONS *
  *************/
 
-pub fn print(arguments: &[Value]) -> EvaluateResult<'static> {
+pub fn print(arguments: &[Value]) -> Result<'static> {
     if arguments.len() != 1 {
         return Err(SplashRuntimeError::InvalidSignature(
             "print",
@@ -179,11 +179,11 @@ pub fn print(arguments: &[Value]) -> EvaluateResult<'static> {
         ));
     }
 
-    println!("{}", arguments[0].to_string());
+    println!("{}", arguments[0]);
     Ok(None)
 }
 
-pub fn string(arguments: &[Value]) -> EvaluateResult<'static> {
+pub fn string(arguments: &[Value]) -> Result<'static> {
     if arguments.len() != 1 {
         return Err(SplashRuntimeError::InvalidSignature(
             "string",
@@ -192,10 +192,10 @@ pub fn string(arguments: &[Value]) -> EvaluateResult<'static> {
         ));
     }
 
-    Ok(Some(Value::String(arguments[0].to_string())))
+    Ok(Some(Value::String(format!("{}", arguments[0]))))
 }
 
-pub fn length(arguments: &[Value]) -> EvaluateResult<'static> {
+pub fn length(arguments: &[Value]) -> Result<'static> {
     if arguments.len() != 1 {
         return Err(SplashRuntimeError::InvalidSignature(
             "length",

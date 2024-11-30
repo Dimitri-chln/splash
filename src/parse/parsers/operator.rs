@@ -3,10 +3,11 @@ use nom::{
     error::ParseError, IResult, Parser,
 };
 
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Operator {
     // Unary
     Not,
+
     // Binary
     Plus,
     Minus,
@@ -21,6 +22,27 @@ pub enum Operator {
     LessThan,
     And,
     Or,
+}
+
+impl Operator {
+    #[must_use]
+    pub fn priority(&self) -> impl Ord {
+        match self {
+            // Unary
+            Self::Not => 4,
+
+            // Binary
+            Self::Times | Self::Divide | Self::And => 3,
+            Self::Plus | Self::Minus | Self::Or => 2,
+            Self::Modulo => 1,
+            Self::Equal
+            | Self::NotEqual
+            | Self::GreaterOrEqual
+            | Self::GreaterThan
+            | Self::LessOrEqual
+            | Self::LessThan => 0,
+        }
+    }
 }
 
 pub fn unary_operator<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, Operator, E> {

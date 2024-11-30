@@ -12,19 +12,16 @@ use super::{
     SplashRuntimeError,
 };
 
-pub type EvaluateResult<'a> = Result<Option<Value>, SplashRuntimeError<'a>>;
+pub type Result<'a> = std::result::Result<Option<Value>, SplashRuntimeError<'a>>;
 
-fn evaluate_atom<'a>(atom: &Atom<'a>, context: &mut Context<'a>) -> EvaluateResult<'a> {
+fn evaluate_atom<'a>(atom: &Atom<'a>, context: &mut Context<'a>) -> Result<'a> {
     match atom {
         Atom::Literal(literal) => Ok(Some(Value::from(literal.clone()))),
         Atom::Identifier(identifier) => context.variable(identifier).map(Some),
     }
 }
 
-fn evaluate_operation<'a>(
-    operation: &Operation<'a>,
-    context: &mut Context<'a>,
-) -> EvaluateResult<'a> {
+fn evaluate_operation<'a>(operation: &Operation<'a>, context: &mut Context<'a>) -> Result<'a> {
     let values = operation
         .operands()
         .iter()
@@ -34,7 +31,7 @@ fn evaluate_operation<'a>(
         })
         .map_ok(|value| value.ok_or(SplashRuntimeError::NoValue))
         .flatten_ok()
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<std::result::Result<Vec<_>, _>>()?;
 
     match operation.operator() {
         Operator::Not => builtin::not(values[0].clone()),
@@ -58,7 +55,7 @@ fn evaluate_function<'a>(
     identifier: &Identifier<'a>,
     parameters: &[Expression<'a>],
     context: &mut Context<'a>,
-) -> EvaluateResult<'a> {
+) -> Result<'a> {
     let function = context.function(identifier).cloned()?;
     let parameters = evaluate_values(parameters, context)?;
 
@@ -67,7 +64,7 @@ fn evaluate_function<'a>(
         Function::Custom(arguments, body) => {
             if parameters.len() != arguments.len() {
                 return Err(SplashRuntimeError::InvalidSignature(
-                    *identifier,
+                    identifier,
                     arguments.len(),
                     parameters.len(),
                 ));
@@ -87,7 +84,7 @@ fn evaluate_function<'a>(
     }
 }
 
-fn evaluate_list<'a>(elements: &[Expression<'a>], context: &mut Context<'a>) -> EvaluateResult<'a> {
+fn evaluate_list<'a>(elements: &[Expression<'a>], context: &mut Context<'a>) -> Result<'a> {
     Ok(Some(Value::List(evaluate_values(elements, context)?)))
 }
 
@@ -95,7 +92,7 @@ fn evaluate_index<'a>(
     identifier: &Identifier<'a>,
     index: &Expression<'a>,
     context: &mut Context<'a>,
-) -> EvaluateResult<'a> {
+) -> Result<'a> {
     let list = context.variable(identifier)?;
     let index = evaluate(index, context)?.ok_or(SplashRuntimeError::NoValue)?;
 
@@ -116,7 +113,7 @@ fn evaluate_index<'a>(
     ))
 }
 
-pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> EvaluateResult<'a> {
+pub fn evaluate<'a>(expression: &Expression<'a>, context: &mut Context<'a>) -> Result<'a> {
     match expression {
         Expression::Atom(atom) => evaluate_atom(atom, context),
         Expression::Operation(operation) => evaluate_operation(operation, context),

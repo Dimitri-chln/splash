@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::parse::Literal;
 
 #[derive(Clone, Debug)]
@@ -18,18 +20,22 @@ impl From<Literal> for Value {
     }
 }
 
-impl ToString for Value {
-    fn to_string(&self) -> String {
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Number(number) => number.to_string(),
-            Self::Boolean(boolean) => boolean.to_string(),
-            Self::String(string) => string.to_string(),
-            Self::List(list) => format!(
-                "[{}]",
-                list.iter()
-                    .map(|value| value.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
+            Self::Number(number) => number.fmt(f),
+            Self::Boolean(boolean) => boolean.fmt(f),
+            Self::String(string) => string.fmt(f),
+            Self::List(list) => write!(
+                f,
+                "{}",
+                format_args!(
+                    "[{}]",
+                    list.iter()
+                        .map(|value| format!("{value}"))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
             ),
         }
     }

@@ -19,7 +19,10 @@ impl<'a> ParseError<&'a str> for SplashParseError<'a> {
                 stack.push(Self::from_error_kind(input, kind));
                 Self::Stack(stack)
             }
-            other => Self::Stack(vec![other, Self::from_error_kind(input, kind)]),
+            Self::InvalidKeyword => Self::Stack(vec![
+                Self::InvalidKeyword,
+                Self::from_error_kind(input, kind),
+            ]),
         }
     }
 }
