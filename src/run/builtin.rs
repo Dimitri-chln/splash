@@ -106,16 +106,6 @@ pub fn not_equal(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn greater_than(left: Value, right: Value) -> EvaluateResult<'static> {
-    match (left, right) {
-        (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left > right))),
-        (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
-            "greater_than",
-            vec![left, right],
-        )),
-    }
-}
-
 pub fn greater_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
     match (left, right) {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left >= right))),
@@ -126,11 +116,11 @@ pub fn greater_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
     }
 }
 
-pub fn less_than(left: Value, right: Value) -> EvaluateResult<'static> {
+pub fn greater_than(left: Value, right: Value) -> EvaluateResult<'static> {
     match (left, right) {
-        (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left < right))),
+        (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left > right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
-            "less_than",
+            "greater_than",
             vec![left, right],
         )),
     }
@@ -141,6 +131,16 @@ pub fn less_or_equal(left: Value, right: Value) -> EvaluateResult<'static> {
         (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left <= right))),
         (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
             "less_or_equal",
+            vec![left, right],
+        )),
+    }
+}
+
+pub fn less_than(left: Value, right: Value) -> EvaluateResult<'static> {
+    match (left, right) {
+        (Value::Number(left), Value::Number(right)) => Ok(Some(Value::Boolean(left < right))),
+        (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
+            "less_than",
             vec![left, right],
         )),
     }
