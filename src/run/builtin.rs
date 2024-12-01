@@ -79,31 +79,11 @@ pub fn modulo(left: Value, right: Value) -> Result<'static> {
 }
 
 pub fn equal(left: Value, right: Value) -> Result<'static> {
-    match (left, right) {
-        (Value::Number(left), Value::Number(right)) => {
-            Ok(Some(Value::Boolean((left - right).abs() <= f64::EPSILON)))
-        }
-        (Value::Boolean(left), Value::Boolean(right)) => Ok(Some(Value::Boolean(left == right))),
-        (Value::String(left), Value::String(right)) => Ok(Some(Value::Boolean(left == right))),
-        (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
-            "equal",
-            vec![left, right],
-        )),
-    }
+    Ok(Some(Value::Boolean(left == right)))
 }
 
 pub fn not_equal(left: Value, right: Value) -> Result<'static> {
-    match (left, right) {
-        (Value::Number(left), Value::Number(right)) => {
-            Ok(Some(Value::Boolean((left - right).abs() > f64::EPSILON)))
-        }
-        (Value::Boolean(left), Value::Boolean(right)) => Ok(Some(Value::Boolean(left != right))),
-        (Value::String(left), Value::String(right)) => Ok(Some(Value::Boolean(left != right))),
-        (left, right) => Err(SplashRuntimeError::InvalidSignatureType(
-            "not_equal",
-            vec![left, right],
-        )),
-    }
+    Ok(Some(Value::Boolean(left != right)))
 }
 
 pub fn greater_or_equal(left: Value, right: Value) -> Result<'static> {

@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::parse::Literal;
 
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Value {
     Number(f64),
     Boolean(bool),

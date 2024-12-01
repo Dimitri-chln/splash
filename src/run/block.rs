@@ -36,6 +36,29 @@ pub fn run<'a>(
                 let value = evaluate(expression, context)?.ok_or(SplashRuntimeError::NoValue)?;
                 context.assign_variable(identifier, value)?;
             }
+            Statement::IndexAssignment(identifier, index, expression) => {
+                let list = context.variable(identifier)?;
+                let index = evaluate(index, context)?.ok_or(SplashRuntimeError::NoValue)?;
+
+                let mut list = match list {
+                    Value::List(list) => list,
+                    value => return Err(SplashRuntimeError::NotAList(value)),
+                };
+
+                let index = match index {
+                    Value::Number(number) => number as usize,
+                    value => return Err(SplashRuntimeError::NotAnIndex(value)),
+                };
+
+                let value = evaluate(expression, context)?.ok_or(SplashRuntimeError::NoValue)?;
+
+                if index < list.len() as usize {
+                    list[index as usize] = value;
+                    context.assign_variable(identifier, Value::List(list))?
+                } else {
+                    return Err(SplashRuntimeError::OutOufRange(Value::Number(index as f64)));
+                }
+            }
             Statement::If(predicate, then) => {
                 if evaluate_predicate(predicate, context)? {
                     match context.child(|context| self::run(then, context))? {

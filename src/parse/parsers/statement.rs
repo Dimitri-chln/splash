@@ -22,6 +22,7 @@ pub enum Statement<'a> {
     Block(Block<'a>),
     Initialization(Identifier<'a>, Expression<'a>),
     Assignment(Identifier<'a>, Expression<'a>),
+    IndexAssignment(Identifier<'a>, Expression<'a>, Expression<'a>),
     If(Expression<'a>, Block<'a>),
     IfElse(Expression<'a>, Block<'a>, Block<'a>),
     While(Expression<'a>, Block<'a>),
@@ -53,6 +54,18 @@ fn parse_assignment(input: &str) -> IResult<&str, Statement, SplashParseError> {
     map(
         tuple((terminated(trim(identifier), char('=')), trim(expression))),
         |(identifier, expression)| Statement::Assignment(identifier, expression),
+    )
+    .parse(input)
+}
+
+fn parse_index_assignment(input: &str) -> IResult<&str, Statement, SplashParseError> {
+    map(
+        tuple((
+            trim(identifier),
+            trim(delimited(char('['), trim(expression), char(']'))),
+            preceded(char('='), trim(expression)),
+        )),
+        |(identifier, index, expression)| Statement::IndexAssignment(identifier, index, expression),
     )
     .parse(input)
 }
@@ -136,6 +149,7 @@ pub fn statement(input: &str) -> IResult<&str, Statement, SplashParseError> {
             parse_while,
             parse_if_else,
             parse_if,
+            parse_index_assignment,
             parse_assignment,
             parse_initialization,
             parse_block,
