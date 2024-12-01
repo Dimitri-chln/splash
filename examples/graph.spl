@@ -1,0 +1,182 @@
+// UTILS
+
+fn init_list(length, value) {
+    let list = []
+    for _ in range(length) {
+        list = push(list, value)
+    }
+    return list
+}
+
+fn contains(list, value) {
+    for v in list {
+        if v == value {
+            return true
+        }
+    }
+    return false
+}
+
+fn remove(list, element) {
+    let new_list = []
+    for e in list {
+        if e != element {
+            new_list = push(new_list, e)
+        }
+    }
+    return new_list
+}
+
+// GRAPH
+
+fn new_graph(vertices) {
+    return [vertices, []]
+}
+
+fn vertices(graph) {
+    return graph[0]
+}
+
+fn edges(graph) {
+    return graph[1]
+}
+
+fn start(edge) {
+    return edge[0]
+}
+
+fn end(edge) {
+    return edge[1]
+}
+
+fn value(edge) {
+    return edge[2]
+}
+
+fn contains_edge(graph, start, end) {
+    for e in edges(graph) {
+        if (start(e) == start) && (end(e) == e) {
+            return true
+        }
+    }
+    return false
+}
+
+fn add_edge(graph, start, end, value) {
+    if !contains_edge(graph, start, end) {
+        graph[1] = push(graph[1], [start, end, value])
+    }
+    return graph
+}
+
+fn edge(graph, start, end) {
+    for edge in edges(graph) {
+        if (start(edge) == start) && (end(edge) == end) {
+            return value(edge)
+        }
+    }
+}
+
+fn alpha_beta(graph) {
+    let alpha = [0]
+    let beta = []
+
+    for vertex in range(vertices(graph)) {
+        let successors = alpha[length(alpha) - 1]
+        for edge in edges(graph) {
+            if edge[0] == vertex {
+                beta = push(beta, edge[1])
+                successors = successors + 1
+            }
+        }
+        alpha = push(alpha, successors)
+    }
+
+    return [alpha, beta]
+}
+
+fn alpha(alpha_beta) {
+    return alpha_beta[0]
+}
+
+fn beta(alpha_beta) {
+    return alpha_beta[1]
+}
+
+fn successors(graph_ab, vertex) {
+    let graph_a = alpha(graph_ab)
+    let graph_b = beta(graph_ab)
+    
+    let successors = []
+    for i in range(graph_a[vertex + 1] - graph_a[vertex]) {
+        successors = push(successors, graph_b[graph_a[vertex] + i])
+    }
+    return successors
+}
+
+fn vertex_with_min_distance(queue, distances) {
+    let min_vertex = 0
+    let min_distance = INF
+
+    for vertex in queue {
+        if distances[vertex] < min_distance {
+            min_vertex = vertex
+            min_distance = distances[vertex]
+        }
+    }
+
+    return min_vertex
+}
+
+fn dijkstra(graph, source) {
+    let graph_ab = alpha_beta(graph)
+
+    let distances = init_list(vertices(graph), INF)
+    let previous = init_list(vertices(graph), -1)
+    let queue = range(vertices(graph))
+    distances[source] = 0
+    previous[source] = 0
+
+    while length(queue) > 0 {
+        let min_vertex = vertex_with_min_distance(queue, distances)
+        queue = remove(queue, min_vertex)
+
+        for successor in successors(graph_ab, min_vertex) {
+            if contains(queue, successor) {
+                let alt = distances[min_vertex] + edge(graph, min_vertex, successor)
+                if alt < distances[successor] {
+                    distances[successor] = alt
+                    previous[successor] = min_vertex
+                }
+            }
+        }
+    }
+
+    return [distances, previous]
+}
+
+// MAIN
+
+let graph = new_graph(6)
+graph = add_edge(graph, 0, 1, 4)
+graph = add_edge(graph, 0, 2, 5)
+graph = add_edge(graph, 1, 0, 4)
+graph = add_edge(graph, 1, 2, 11)
+graph = add_edge(graph, 1, 3, 9)
+graph = add_edge(graph, 1, 4, 7)
+graph = add_edge(graph, 2, 0, 5)
+graph = add_edge(graph, 2, 1, 11)
+graph = add_edge(graph, 2, 4, 3)
+graph = add_edge(graph, 3, 1, 9)
+graph = add_edge(graph, 3, 4, 13)
+graph = add_edge(graph, 3, 5, 2)
+graph = add_edge(graph, 4, 1, 7)
+graph = add_edge(graph, 4, 2, 3)
+graph = add_edge(graph, 4, 3, 13)
+graph = add_edge(graph, 4, 5, 6)
+graph = add_edge(graph, 5, 3, 2)
+graph = add_edge(graph, 5, 4, 6)
+
+print(graph)
+print(alpha_beta(graph))
+print(dijkstra(graph, 0))
